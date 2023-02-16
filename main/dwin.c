@@ -23,24 +23,17 @@ typedef struct dwin_tagConfig
 //     int djcjd;
 // } uart_intf_cnfig_t;
 
-int dwin_Init(dwin_config_handle_t conf_handle, dwin_field_t field[], uint16_t count)
+int dwin_Init(dwin_handle_t handle)
 {
-    conf_handle = malloc(sizeof(dwin_config_t));
-    conf_handle->x = 0;
-    conf_handle->y = 0;
-
-    int i;
-    for (i = 0; i < count; i++)
-    {
-        dwin_PrintField(&field[i]);
-    }
-
+    handle = malloc(sizeof(dwin_config_t));
+    handle->x = 0;
+    handle->y = 0;
     return 0;
 }
 
-// int dwin_Init(dwin_config_handle_t conf_handle, dwin_field_t field[], uint16_t count, uart_intf_config_t cgf_intf)
+// int dwin_Init(dwin_handle_t conf_handle, dwin_field_t field[], uint16_t count, uart_intf_config_t cgf_intf)
 // {
-//     conf_handle = malloc(sizeof(dwin_config_handle_t));
+//     conf_handle = malloc(sizeof(dwin_handle_t));
 //     cgf_intf = malloc(sizeof(uart_intf_config_t));
 
 //     int i;
@@ -70,6 +63,14 @@ void dwin_PrintField(dwin_field_t const *field)
         printf("field->buffer.extrnal.buff_usage_size->%d\n", field->buffer.extrnal.buff_usage_size);
     }
 }
+
+#ifdef DWIN_REQUIRED_CALLBACK
+int dwin_Write(dwin_handle_t handle, dwin_field_t const *field, void *data);
+int dwin_Read(dwin_handle_t handle, dwin_field_t const *field, void *data);
+#else
+int dwin_Write(dwin_handle_t handle, dwin_field_t const *field, void *data);
+int dwin_Read(dwin_handle_t handle, dwin_field_t const *field, void *data);
+#endif
 
 const char *GetType(dwin_type_t type)
 {

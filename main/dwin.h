@@ -48,6 +48,7 @@ typedef struct dwin_tagField
     dwin_type_t type;
     dwin_buffer_t buffer;
 #ifdef DWIN_REQUIRED_CALLBACK
+    uint16_t field_id;
     dwin_callback_fun_t clbk_fun;
 #endif
 } dwin_field_t;
@@ -60,12 +61,20 @@ typedef struct dwin_tagField
  */
 
 // TODO lesson 101 i can only define a pointer to a structure
-typedef struct dwin_tagConfig *dwin_config_handle_t;
+typedef struct dwin_tagConfig *dwin_handle_t;
 
 // typedef struct uart_intf_tagConfig *uart_intf_config_t;
 
-int dwin_Init(dwin_config_handle_t conf_handle, dwin_field_t field[], uint16_t count);
-// int dwin_Init(dwin_config_handle_t conf_handle, dwin_field_t field[], uint16_t count, uart_intf_config_t cgf_intf);
+int dwin_Init(dwin_handle_t handle);
+
+#ifdef DWIN_REQUIRED_CALLBACK
+int dwin_Register(dwin_handle_t handle, dwin_field_t field[], uint16_t count);
+int dwin_Write(dwin_handle_t handle, dwin_field_t const *field, void *data);
+int dwin_Read(dwin_handle_t handle, dwin_field_t const *field, void *data);
+#else
+int dwin_Write(dwin_handle_t handle, dwin_field_t const *field, void *data);
+int dwin_Read(dwin_handle_t handle, dwin_field_t const *field, void *data);
+#endif
 
 void dwin_PrintField(dwin_field_t const *field);
 

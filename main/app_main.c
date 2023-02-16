@@ -38,6 +38,11 @@ static const dwin_field_t FIELD3 = {
     // .buffer.external = my_buffer,
 };
 
+static dwin_field_t ARRAY_OF_FIELDS[3] = {
+    FIELD1,
+    FIELD2,
+    FIELD3};
+
 void app_main(void)
 {
     ESP_LOGI(TAG, "dwin_field_t->%d bytes", sizeof(dwin_field_t));
@@ -51,6 +56,10 @@ void app_main(void)
 
     strncpy((char *)FIELD3.buffer.extrnal.buff_ptr, "fbvfbvjbfjvbjfbvjbfj", FIELD3.buffer.extrnal.buff_alloc_size);
     printf("conetnt->%s\n", (const char *)FIELD3.buffer.extrnal.buff_ptr);
+
+    static dwin_config_handle_t handle;
+    dwin_Init(handle, ARRAY_OF_FIELDS, DWIN_GET_FIELD_COUNT(ARRAY_OF_FIELDS));
+
     // xTaskCreate(Task1, "Task1", 2048, NULL, 2, NULL);
     // xTaskCreate(Task2, "Task2", 2048, NULL, 1, NULL);
 

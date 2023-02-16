@@ -16,6 +16,8 @@
 typedef void (*dwin_callback_fun_t)(uint8_t *data, uint32_t size, void const *field_ptr);
 #endif
 
+#define DWIN_GET_FIELD_COUNT(array) (sizeof(array) / sizeof(array[0]))
+
 typedef enum dwin_tagType
 {
     DWIN_TYPE_NONE = -1,
@@ -50,8 +52,21 @@ typedef struct dwin_tagField
 #endif
 } dwin_field_t;
 
+// TODO remove this coment
+/* this is opaque objct because user don not have any need to modify this object
+ * also this objct can contain import instances to serial and field objects
+ * it is importe to restrict access this thing from user
+ *
+ */
 
+// TODO lesson 101 i can only define a pointer to a structure
+typedef struct dwin_tagConfig *dwin_config_handle_t;
 
-void dwin_PrintField(dwin_field_t *field);
+// typedef struct uart_intf_tagConfig *uart_intf_config_t;
+
+int dwin_Init(dwin_config_handle_t conf_handle, dwin_field_t field[], uint16_t count);
+// int dwin_Init(dwin_config_handle_t conf_handle, dwin_field_t field[], uint16_t count, uart_intf_config_t cgf_intf);
+
+void dwin_PrintField(dwin_field_t const *field);
 
 #endif

@@ -5,6 +5,17 @@
 
 #define DWIN_INTERNAL_BUFFER_SIZE (4)
 
+/* ======================= configaration ======================= */
+
+// #define DWIN_REQUIRED_CALLBACK
+#define DWIN_REQUIRED_DEBUGGING
+
+/* ============================================================= */
+
+#ifdef DWIN_REQUIRED_CALLBACK
+typedef void (*dwin_callback_fun_t)(uint8_t *data, uint32_t size, void const *field_ptr);
+#endif
+
 typedef enum dwin_tagType
 {
     DWIN_TYPE_NONE = -1,
@@ -34,8 +45,13 @@ typedef struct dwin_tagField
     uint16_t vp_addr;
     dwin_type_t type;
     dwin_buffer_t buffer;
+#ifdef DWIN_REQUIRED_CALLBACK
+    dwin_callback_fun_t clbk_fun;
+#endif
 } dwin_field_t;
 
-/* TODO needs definition */
+
+
+void dwin_PrintField(dwin_field_t *field);
 
 #endif

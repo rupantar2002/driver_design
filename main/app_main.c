@@ -11,9 +11,6 @@
 
 static const char *TAG = "app_main";
 
-// static void Task1(void *p);
-// static void Task2(void *p);
-
 static uint8_t my_buffer1[100];
 static uint8_t my_buffer2[50];
 
@@ -66,21 +63,3 @@ void app_main(void)
     // xTaskCreatePinnedToCore(Task1, "Task1", 2048, NULL, 1, NULL,0);
     // xTaskCreatePinnedToCore(Task2, "Task2", 2048, NULL, 1, NULL,1);
 }
-
-// static void Task1(void *p)
-// {
-//     while (1)
-//     {
-//         ESP_LOGI(TAG, "This is from Task1 time->%llu us", esp_timer_get_time());
-//         vTaskDelay(pdMS_TO_TICKS(1000));
-//     }
-// }
-
-// static void Task2(void *p)
-// {
-//     while (1)
-//     {
-//         ESP_LOGI(TAG, "This is from Task2 time->%llu us", esp_timer_get_time());
-//         vTaskDelay(pdMS_TO_TICKS(1000));
-//     }
-// }

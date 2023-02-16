@@ -2,14 +2,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static const char *GetType(dwin_type_t type);
-
+/* ============= DWIN UART PROTOCOL SPECIFIC ============= */
+#define FRAME_HEADER_H (0x5A)
+#define FRAME_HEADER_L (0xA5)
+#define COMMAND_READ (0x83)
+#define COMMAND_WRITE (0x83)
+/* ======================================================= */
 typedef struct dwin_tagConfig
 {
-    int x;
-    int y;
-
+    dwin_field_t *fields;
+    uint16_t count;
+    // TODO should have a uart instance
 } dwin_config_t;
+
+// TODO with in debugging tag
+static const char *GetType(dwin_type_t type);
+static int Write();
+
+// TODO with in callbcak tag
+static dwin_field_t *GetField(uint16_t id, dwin_config_t *cfg);
 
 // struct dwin_tagConfig
 // {
@@ -26,24 +37,62 @@ typedef struct dwin_tagConfig
 int dwin_Init(dwin_handle_t handle)
 {
     handle = malloc(sizeof(dwin_config_t));
-    handle->x = 0;
-    handle->y = 0;
+    if (handle == NULL)
+    {
+        printf("failed to init\n");
+        return 0;
+    }
+    return 1;
+}
+
+#ifdef DWIN_REQUIRED_CALLBACK
+int dwin_Register(dwin_handle_t handle, dwin_field_t field[], uint16_t count)
+{
+    if (handle == NULL)
+    {
+        printf("invalid handle\n");
+        return 0;
+    }
+    handle->fields = field;
+    return 1;
+}
+
+int dwin_Write(dwin_handle_t handle, uint16_t id, void *data)
+{
+    dwin_field_t *pField = GetField(id, handle);
+
+    switch (pField->type)
+    {
+    case DWIN_TYPE_INT:
+        // TODO should be encapsulated in function
+        {
+            uint32_t val = *((uint32_t *)data);
+        }
+        break;
+    case DWIN_TYPE_LINT:
+        break;
+    case DWIN_TYPE_VP_H:
+        break;
+    case DWIN_TYPE_VP_L:
+        break;
+    case DWIN_TYPE_TEXT:
+        break;
+    default:
+        break;
+    }
+
     return 0;
 }
 
-// int dwin_Init(dwin_handle_t conf_handle, dwin_field_t field[], uint16_t count, uart_intf_config_t cgf_intf)
-// {
-//     conf_handle = malloc(sizeof(dwin_handle_t));
-//     cgf_intf = malloc(sizeof(uart_intf_config_t));
+int dwin_Read(dwin_handle_t handle, uint16_t id, void *data) { return 0; }
 
-//     int i;
-//     for (i = 0; i < count; i++)
-//     {
-//         dwin_PrintField(&field[i]);
-//     }
-
-//     return 0;
-// }
+#else
+int dwin_Write(dwin_handle_t handle, dwin_field_t const *field, void *data)
+{
+    return 0;
+}
+int dwin_Read(dwin_handle_t handle, dwin_field_t const *field, void *data) { return 0; }
+#endif
 
 void dwin_PrintField(dwin_field_t const *field)
 {
@@ -63,14 +112,6 @@ void dwin_PrintField(dwin_field_t const *field)
         printf("field->buffer.extrnal.buff_usage_size->%d\n", field->buffer.extrnal.buff_usage_size);
     }
 }
-
-#ifdef DWIN_REQUIRED_CALLBACK
-int dwin_Write(dwin_handle_t handle, dwin_field_t const *field, void *data);
-int dwin_Read(dwin_handle_t handle, dwin_field_t const *field, void *data);
-#else
-int dwin_Write(dwin_handle_t handle, dwin_field_t const *field, void *data);
-int dwin_Read(dwin_handle_t handle, dwin_field_t const *field, void *data);
-#endif
 
 const char *GetType(dwin_type_t type)
 {
@@ -98,4 +139,41 @@ const char *GetType(dwin_type_t type)
         break;
     }
     return (const char *)temp;
+}
+
+static dwin_field_t *GetField(uint16_t id, dwin_config_t *cfg)
+{
+    int i;
+    for (i = 0; i < cfg->count; i++)
+    {
+        if (cfg->fields[i].field_id == id)
+        {
+            return &(cfg->fields[i]);
+        }
+    }
+
+    return NULL;
+}
+
+static int Write()
+{
+
+    // uint8_t count = 0, i = 0, byteCount;
+    // byteCount = 6 + size;
+    // uint8_t cmd[DWIN_DISPLAY_MAX_DATA_LENGTH + 6];
+
+    // cmd[0] = FRAME_HEADER_H;
+    // cmd[1] = FRAME_HEADER_L;
+    // cmd[2] = (3 + size);
+    // cmd[3] = COMMONA_WRITE;
+    // cmd[4] = vpH;
+    // cmd[5] = vpL;
+    // for (i = 6; i < byteCount; i++)
+    // {
+    //     cmd[i] = data[count];
+    //     count++;
+    // }
+    // port_uart_Write(cmd, byteCount);
+
+    return 0;
 }

@@ -2,12 +2,13 @@
 #define __DWIN_H__
 
 #include <stdint.h>
+#include <uart_intf.h>
 
 #define DWIN_INTERNAL_BUFFER_SIZE (4)
 
 /* ======================= configaration ======================= */
 
-// #define DWIN_REQUIRED_CALLBACK
+#define DWIN_REQUIRED_CALLBACK
 #define DWIN_REQUIRED_DEBUGGING
 
 /* ============================================================= */
@@ -69,8 +70,8 @@ int dwin_Init(dwin_handle_t handle);
 
 #ifdef DWIN_REQUIRED_CALLBACK
 int dwin_Register(dwin_handle_t handle, dwin_field_t field[], uint16_t count);
-int dwin_Write(dwin_handle_t handle, dwin_field_t const *field, void *data);
-int dwin_Read(dwin_handle_t handle, dwin_field_t const *field, void *data);
+int dwin_Write(dwin_handle_t handle, uint16_t id, void *data);
+int dwin_Read(dwin_handle_t handle, uint16_t id, void *data);
 #else
 int dwin_Write(dwin_handle_t handle, dwin_field_t const *field, void *data);
 int dwin_Read(dwin_handle_t handle, dwin_field_t const *field, void *data);

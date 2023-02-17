@@ -1,5 +1,6 @@
 #include <dwin.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 /* ============= DWIN UART PROTOCOL SPECIFIC ============= */
@@ -10,17 +11,23 @@
 /* ======================================================= */
 typedef struct dwin_tagConfig
 {
+#ifdef DWIN_REQUIRED_CALLBACK
     dwin_field_t *fields;
     uint16_t count;
-    // TODO should have a uart instance
+#endif
+    uart_intf_handle_t uart_handle;
 } dwin_config_t;
 
 // TODO with in debugging tag
 static const char *GetType(dwin_type_t type);
-static int Write();
+
+static int WriteField(dwin_handle_t hdl, uint16_t vp_addr, uint8_t *data, uint32_t size);
 
 // TODO with in callbcak tag
+
+#ifdef DWIN_REQUIRED_CALLBACK
 static dwin_field_t *GetField(uint16_t id, dwin_config_t *cfg);
+#endif
 
 // struct dwin_tagConfig
 // {
@@ -40,9 +47,32 @@ int dwin_Init(dwin_handle_t handle)
     if (handle == NULL)
     {
         printf("failed to init\n");
-        return 0;
+        return false;
     }
-    return 1;
+#ifdef DWIN_REQUIRED_CALLBACK
+    handle->count = 0;
+    handle->fields = NULL;
+#endif
+    handle->uart_handle = NULL;
+    return true;
+}
+
+int dwin_SetInterface(dwin_handle_t handle, uart_intf_handle_t intf)
+{
+    if (handle == NULL)
+    {
+        printf("invalid handle\n");
+        return false;
+    }
+
+    if (intf == NULL)
+    {
+        printf("invalid uart handle\n");
+        return false;
+    }
+
+    handle->uart_handle = intf;
+    return true;
 }
 
 #ifdef DWIN_REQUIRED_CALLBACK
@@ -87,11 +117,89 @@ int dwin_Write(dwin_handle_t handle, uint16_t id, void *data)
 int dwin_Read(dwin_handle_t handle, uint16_t id, void *data) { return 0; }
 
 #else
+
 int dwin_Write(dwin_handle_t handle, dwin_field_t const *field, void *data)
 {
+    if (handle == NULL)
+    {
+        printf("invalid handle\n");
+        return false;
+    }
+
+    if (field == NULL)
+    {
+        printf("invalid field\n");
+        return false;
+    }
+    // uint8_t _buffer[4] = {0}, temp = false;
+    // dwin_display_field_t *pField = dwin_display_GetField(id);
+    // if (pField == NULL)
+    // {
+    //     PORT_LOGE(TAG, "field not found\r\n");
+    //     return false;
+    // }
+
+    // switch (field->type)
+    // {
+    // case DWIN_TYPE_LINT:
+    // {
+
+    //     int32_t val = *(int32_t *)data;
+    //     _buffer[0] = (val >> 24) & 0xff;
+    //     _buffer[1] = (val >> 16) & 0xff;
+    //     _buffer[2] = (val >> 8) & 0xff;
+    //     _buffer[3] = val & 0xff;
+    //     memcpy(pField->data, _buffer, sizeof(int32_t));
+    //     temp = dwin_display_Write(pField->vpHigh, pField->vpLow, _buffer, sizeof(int32_t));
+    // }
+    // break;
+    // case DWIN_TYPE_INT:
+    // {
+    //     int16_t val = *(int16_t *)data;
+    //     _buffer[0] = (val >> 8) & 0xff;
+    //     _buffer[1] = val & 0xff;
+    //     memcpy(pField->data, _buffer, sizeof(int16_t));
+    //     temp = dwin_display_Write(pField->vpHigh, pField->vpLow, _buffer, sizeof(int16_t));
+    // }
+    // break;
+    // case DWIN_TYPE_TEXT:
+    // {
+    //     strncpy((char *)pField->data, data, pField->dataLen);
+    //     temp = dwin_display_Write(pField->vpHigh, pField->vpLow, data, strlen(data));
+    // }
+    // break;
+    // case DWIN_TYPE_VP_H:
+    // {
+    //     uint8_t val = *(uint16_t *)data;
+    //     _buffer[0] = val;
+    //     _buffer[1] = 0x00;
+    //     memcpy(pField->data, _buffer, sizeof(uint16_t));
+    //     temp = dwin_display_Write(pField->vpHigh, pField->vpLow, _buffer, sizeof(uint16_t));
+    // }
+    // break;
+    // case DWIN_TYPE_VP_L:
+    // {
+    //     uint8_t val = *(uint16_t *)data;
+    //     _buffer[0] = 0x00;
+    //     _buffer[1] = val;
+    //     memcpy(pField->data, _buffer, sizeof(uint16_t));
+    //     temp = dwin_display_Write(pField->vpHigh, pField->vpLow, _buffer, sizeof(uint16_t));
+    // }
+    // break;
+    // default:
+    //     break;
+    // }
     return 0;
 }
-int dwin_Read(dwin_handle_t handle, dwin_field_t const *field, void *data) { return 0; }
+
+int dwin_Read(dwin_handle_t handle, dwin_field_t const *field, void *data)
+{
+    if (field->type != DWIN_TYPE_TEXT)
+    {
+        uart_intf_Read(handle->uart_handle, field->buffer.internal, DWIN_INTERNAL_BUFFER_SIZE);
+    }
+    return 0;
+}
 #endif
 
 void dwin_PrintField(dwin_field_t const *field)
@@ -141,6 +249,7 @@ const char *GetType(dwin_type_t type)
     return (const char *)temp;
 }
 
+#ifdef DWIN_REQUIRED_CALLBACK
 static dwin_field_t *GetField(uint16_t id, dwin_config_t *cfg)
 {
     int i;
@@ -154,26 +263,38 @@ static dwin_field_t *GetField(uint16_t id, dwin_config_t *cfg)
 
     return NULL;
 }
+#endif
 
-static int Write()
+static int WriteField(dwin_handle_t hdl, uint16_t vp_addr, uint8_t *data, uint32_t size)
 {
+    // TODO both static and dynamic buffer aloocation scheme should be present
 
-    // uint8_t count = 0, i = 0, byteCount;
-    // byteCount = 6 + size;
-    // uint8_t cmd[DWIN_DISPLAY_MAX_DATA_LENGTH + 6];
+    // <FHH> <FHL> <BC> 82 <VP><VP> <VL1><VL1>
 
-    // cmd[0] = FRAME_HEADER_H;
-    // cmd[1] = FRAME_HEADER_L;
-    // cmd[2] = (3 + size);
-    // cmd[3] = COMMONA_WRITE;
-    // cmd[4] = vpH;
-    // cmd[5] = vpL;
-    // for (i = 6; i < byteCount; i++)
-    // {
-    //     cmd[i] = data[count];
-    //     count++;
-    // }
-    // port_uart_Write(cmd, byteCount);
+#ifdef DWIN_RUNTIME_ALLOCATION_STATIC
+    uint8_t _command[DWIN_INTERNAL_BUFFER_SIZE];
+#else
+    uint8_t *_command = (uint8_t *)malloc(6 + size);
+#endif
+    uint16_t i, count = 0;
 
+    _command[0] = FRAME_HEADER_H;
+    _command[1] = FRAME_HEADER_L;
+    _command[2] = (3 + size);
+    _command[3] = COMMAND_WRITE;
+    _command[4] = ((vp_addr << 8) & 0xff);
+    _command[5] = (vp_addr & 0Xff);
+
+    for (i = 6; i < size; i++)
+    {
+        _command[i] = data[count];
+        count++;
+    }
+    // TODO needs implementation
+    uart_intf_Write(hdl->uart_handle, data, size);
+
+#ifndef DWIN_RUNTIME_ALLOCATION_STATIC
+    free(_command);
+#endif
     return 0;
 }

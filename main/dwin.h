@@ -8,8 +8,27 @@
 
 /* ======================= configaration ======================= */
 
-#define DWIN_REQUIRED_CALLBACK
+// #define DWIN_REQUIRED_CALLBACK
 #define DWIN_REQUIRED_DEBUGGING
+
+// TODO for statically allocate buffer in runtime
+#define DWIN_RUNTIME_ALLOCATION_STATIC
+#define DWIN_STATIC_BUFFER_SIZE (10)
+
+#define DWIN_STATIC_BUFFER_MIN (10)
+
+// TODO for runtime static buffer allocation
+#if defined DWIN_RUNTIME_ALLOCATION_STATIC
+
+#if !defined DWIN_STATIC_BUFFER_SIZE
+#error undeifne DWIN_STATIC_BUFFER_SIZE
+#endif
+
+#if defined DWIN_STATIC_BUFFER_SIZE && DWIN_STATIC_BUFFER_SIZE < DWIN_STATIC_BUFFER_MIN
+#error DWIN_STATIC_BUFFER_SIZE is to small,less than DWIN_STATIC_BUFFER_MIN
+#endif
+
+#endif
 
 /* ============================================================= */
 
@@ -67,7 +86,7 @@ typedef struct dwin_tagConfig *dwin_handle_t;
 // typedef struct uart_intf_tagConfig *uart_intf_config_t;
 
 int dwin_Init(dwin_handle_t handle);
-
+int dwin_SetInterface(dwin_handle_t handle, uart_intf_handle_t intf);
 #ifdef DWIN_REQUIRED_CALLBACK
 int dwin_Register(dwin_handle_t handle, dwin_field_t field[], uint16_t count);
 int dwin_Write(dwin_handle_t handle, uint16_t id, void *data);

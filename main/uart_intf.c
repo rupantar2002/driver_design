@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include <driver/uart.h>
+#include <esp_err.h>
 
 typedef struct uart_intf_tagConfig
 {
@@ -10,7 +11,7 @@ typedef struct uart_intf_tagConfig
     uart_intf_callback_fun_t clbk_fun;
 } uart_intf_config_t;
 
-int uart_intf_Init(uart_intf_handle_t handle, uint8_t uart_num, uint16_t rx, uint16_t tx, uint32_t baud_rate)
+int uart_intf_Init(uart_intf_handle_t handle, uint8_t uart_num, uint16_t rx, uint16_t tx, uint32_t baud_rate, uint16_t rx_buff, uint16_t tx_bufer)
 {
     handle = malloc(sizeof(uart_config_t));
     if (handle == NULL)
@@ -18,7 +19,9 @@ int uart_intf_Init(uart_intf_handle_t handle, uint8_t uart_num, uint16_t rx, uin
         printf("faield to init uart\n");
         return 0;
     }
+    /* =============================== */
 
+    /* =============================== */
     handle->uart_num = uart_num;
     handle->clbk_fun = NULL;
     return 1;
@@ -33,7 +36,7 @@ int uart_intf_Write(uart_intf_handle_t handle, uint8_t *data, uint32_t size)
 
 int uart_intf_Read(uart_intf_handle_t handle, uint8_t *buff, uint32_t size)
 {
-    uart_read_bytes(handle->uart_num, buff, size, 0);
+    uart_read_bytes(handle->uart_num, buff, size, portMAX_DELAY);
     return 0;
 }
 

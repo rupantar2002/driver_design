@@ -87,6 +87,7 @@ typedef struct dwin_tagConfig *dwin_handle_t;
 
 dwin_handle_t dwin_Init(void);
 int dwin_SetInterface(dwin_handle_t handle, uart_intf_handle_t intf);
+
 #ifdef DWIN_REQUIRED_CALLBACK
 int dwin_Register(dwin_handle_t handle, dwin_field_t field[], uint16_t count);
 int dwin_Write(dwin_handle_t handle, uint16_t id, void *data);

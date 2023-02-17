@@ -8,7 +8,7 @@
 #define FRAME_HEADER_H (0x5A)
 #define FRAME_HEADER_L (0xA5)
 #define COMMAND_READ (0x83)
-#define COMMAND_WRITE (0x83)
+#define COMMAND_WRITE (0x82)
 /* ======================================================= */
 typedef struct dwin_tagConfig
 {
@@ -121,6 +121,8 @@ int dwin_Read(dwin_handle_t handle, uint16_t id, void *data) { return 0; }
 
 int dwin_Write(dwin_handle_t handle, dwin_field_t *field, void *ptrToData)
 {
+    int resp = 0;
+
     if (handle == NULL)
     {
         printf("invalid handle\n");
@@ -138,28 +140,28 @@ int dwin_Write(dwin_handle_t handle, dwin_field_t *field, void *ptrToData)
     {
     case DWIN_TYPE_LINT:
     {
-
         int32_t val = *((int32_t *)ptrToData);
-        field->buffer.internal[0] = (val >> 24) & 0xff;
-        field->buffer.internal[1] = (val >> 16) & 0xff;
-        field->buffer.internal[2] = (val >> 8) & 0xff;
-        field->buffer.internal[3] = val & 0xff;
+        field->buffer.internal[0] = ((val >> 24) & 0xff);
+        field->buffer.internal[1] = ((val >> 16) & 0xff);
+        field->buffer.internal[2] = ((val >> 8) & 0xff);
+        field->buffer.internal[3] = (val & 0xff);
+        resp = WriteField(handle, field->vp_addr, field->buffer.internal, sizeof(int32_t));
     }
     break;
     case DWIN_TYPE_INT:
     {
         int16_t val = *((int16_t *)ptrToData);
-        field->buffer.internal[0] = (val >> 8) & 0xff;
-        field->buffer.internal[1] = val & 0xff;
+        field->buffer.internal[0] = ((val >> 8) & 0xff);
+        field->buffer.internal[1] = (val & 0xff);
+        resp = WriteField(handle, field->vp_addr, field->buffer.internal, sizeof(int16_t));
     }
     break;
-
-        break;
     case DWIN_TYPE_VP_H:
     {
         uint8_t val = *((uint16_t *)ptrToData);
         field->buffer.internal[0] = val;
         field->buffer.internal[1] = 0x00;
+        resp = WriteField(handle, field->vp_addr, field->buffer.internal, sizeof(uint16_t));
     }
     break;
     case DWIN_TYPE_VP_L:
@@ -167,18 +169,20 @@ int dwin_Write(dwin_handle_t handle, dwin_field_t *field, void *ptrToData)
         uint8_t val = *((uint16_t *)ptrToData);
         field->buffer.internal[0] = 0x00;
         field->buffer.internal[1] = val;
+        resp = WriteField(handle, field->vp_addr, field->buffer.internal, sizeof(uint16_t));
     }
     case DWIN_TYPE_TEXT:
     {
         strncpy((char *)field->buffer.extrnal.buff_ptr, (char *)ptrToData, field->buffer.extrnal.buff_alloc_size);
         // TODO if successful
+        resp = WriteField(handle, field->vp_addr, field->buffer.extrnal.buff_ptr, strlen((char *)ptrToData));
     }
     break;
     default:
         break;
     }
 
-    return 0;
+    return resp;
 }
 
 int dwin_Read(dwin_handle_t handle, dwin_field_t const *field, void *data)
@@ -295,7 +299,7 @@ static int WriteField(dwin_handle_t hdl, uint16_t vp_addr, uint8_t *data, uint32
 
     _command[0] = FRAME_HEADER_H;
     _command[1] = FRAME_HEADER_L;
-    _command[2] = (3 + size);
+    _command[2] = (3 + size); // Byte count
     _command[3] = COMMAND_WRITE;
     _command[4] = ((vp_addr << 8) & 0xff);
     _command[5] = (vp_addr & 0Xff);

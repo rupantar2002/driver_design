@@ -5,6 +5,7 @@
 
 #include <driver/uart.h>
 #include <esp_err.h>
+#include <esp_log.h>
 
 typedef struct uart_intf_tagConfig
 {
@@ -64,7 +65,8 @@ int uart_intf_Destroy(uart_intf_handle_t handle)
 
 int uart_intf_Write(uart_intf_handle_t handle, uint8_t *data, uint32_t size)
 {
-    printf("writing uart->%d data->%s size->%d \n", handle->uart_num, (const char *)data, size);
+    printf("writing uart->%d | size->%d \n", handle->uart_num, size);
+    ESP_LOG_BUFFER_HEX("uart_intf", data, size);
     uart_write_bytes(handle->uart_num, data, size);
     uart_wait_tx_done(handle->uart_num, portMAX_DELAY);
     return 0;
@@ -74,6 +76,7 @@ int uart_intf_Read(uart_intf_handle_t handle, uint8_t *buff, uint32_t size)
 {
     printf("reading");
     uart_read_bytes(handle->uart_num, buff, size, portMAX_DELAY);
+
     return 0;
 }
 

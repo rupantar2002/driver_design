@@ -85,16 +85,18 @@ typedef struct dwin_tagConfig *dwin_handle_t;
 
 // typedef struct uart_intf_tagConfig *uart_intf_config_t;
 
-int dwin_Init(dwin_handle_t handle);
+dwin_handle_t dwin_Init(void);
 int dwin_SetInterface(dwin_handle_t handle, uart_intf_handle_t intf);
 #ifdef DWIN_REQUIRED_CALLBACK
 int dwin_Register(dwin_handle_t handle, dwin_field_t field[], uint16_t count);
 int dwin_Write(dwin_handle_t handle, uint16_t id, void *data);
 int dwin_Read(dwin_handle_t handle, uint16_t id, void *data);
 #else
-int dwin_Write(dwin_handle_t handle, dwin_field_t const *field, void *data);
+int dwin_Write(dwin_handle_t handle, dwin_field_t *field, void *ptrToData);
 int dwin_Read(dwin_handle_t handle, dwin_field_t const *field, void *data);
 #endif
+
+int dwin_Destroy(dwin_handle_t handle);
 
 void dwin_PrintField(dwin_field_t const *field);
 

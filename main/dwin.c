@@ -134,7 +134,6 @@ int dwin_Write(dwin_handle_t handle, dwin_field_t *field, void *ptrToData)
         printf("invalid field\n");
         return false;
     }
-
     // TODO add writing function
     switch (field->type)
     {
@@ -145,6 +144,13 @@ int dwin_Write(dwin_handle_t handle, dwin_field_t *field, void *ptrToData)
         field->buffer.internal[1] = ((val >> 16) & 0xff);
         field->buffer.internal[2] = ((val >> 8) & 0xff);
         field->buffer.internal[3] = (val & 0xff);
+
+        // TODO testing
+        // printf("BYTE[%d]->0x%x\n", 3, field->buffer.internal[3]);
+        // printf("BYTE[%d]->0x%x\n", 2, field->buffer.internal[2]);
+        // printf("BYTE[%d]->0x%x\n", 1, field->buffer.internal[1]);
+        // printf("BYTE[%d]->0x%x\n", 0, field->buffer.internal[0]);
+
         resp = WriteField(handle, field->vp_addr, field->buffer.internal, sizeof(int32_t));
     }
     break;
@@ -304,9 +310,11 @@ static int WriteField(dwin_handle_t hdl, uint16_t vp_addr, uint8_t *data, uint32
     _command[4] = ((vp_addr << 8) & 0xff);
     _command[5] = (vp_addr & 0Xff);
 
-    for (i = 6; i < size; i++)
+    for (i = 6; i < size + 6; i++)
     {
         _command[i] = data[count];
+        // TODO testing
+        // printf("_command[%d]->%x\n", i, _command[i]);
         count++;
     }
     // TODO needs implementation

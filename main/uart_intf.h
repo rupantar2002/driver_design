@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef int (*uart_intf_callback_fun_t)(uint8_t *data, uint32_t size);
+typedef int (*uart_intf_callback_fun_t)(uint8_t uart_num, uint8_t *data, uint32_t size);
 
 typedef struct uart_intf_tagConfig *uart_intf_handle_t;
 
